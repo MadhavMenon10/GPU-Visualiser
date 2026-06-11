@@ -1,12 +1,12 @@
 export type BlockKind =
-  | 'die'
-  | 'compute'
-  | 'cache'
-  | 'memctl'
-  | 'interconnect'
-  | 'media'
-  | 'frontend'
-  | 'group'
+  | "die"
+  | "compute"
+  | "cache"
+  | "memctl"
+  | "interconnect"
+  | "media"
+  | "frontend"
+  | "group"
 
 export interface Block {
   id: string
@@ -16,7 +16,7 @@ export interface Block {
   w: number
   h: number
   label?: string
-  labelPos?: 'center' | 'tl'
+  labelPos?: "center" | "tl"
   doc?: string
   disabled?: boolean
   children?: Block[]
@@ -38,7 +38,7 @@ export interface ComponentDoc {
 
 export interface Gpu {
   id: string
-  vendor: 'NVIDIA' | 'AMD' | 'Intel'
+  vendor: "NVIDIA" | "AMD" | "Intel"
   name: string
   die: string
   arch: string

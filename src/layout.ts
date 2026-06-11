@@ -1,4 +1,4 @@
-import type { Block, BlockKind } from './types'
+import type { Block, BlockKind } from "./types"
 
 export function blk(
   id: string,
