@@ -111,7 +111,7 @@ export const arcA770: Gpu = {
     slice: {
       name: "Render slice",
       type: "Compute cluster",
-      role: "Intel's cluster unit: four Xe-cores plus the slice-level graphics hardware: geometry pipeline, rasterizer, HiZ, samplers and a 16-ROP pixel backend. Analogous to an NVIDIA GPC or AMD shader engine.",
+      role: "Intel's cluster unit: four Xe-cores plus the slice-level graphics hardware (geometry pipeline, rasterizer, HiZ and a 16-ROP pixel backend). Analogous to an NVIDIA GPC or AMD shader engine.",
       specs: [
         { label: "Count", value: "8" },
         { label: "Xe-cores per slice", value: "4" },
@@ -123,7 +123,7 @@ export const arcA770: Gpu = {
     xecore: {
       name: "Xe-core",
       type: "Compute unit",
-      role: 'The Xe-HPG compute building block: 16 vector engines and 16 matrix engines sharing a 192 KB L1/SLM and a thread dispatcher. Replaced the old "EU" organization (one Xe-core ≈ 16 former EUs) and is the unit Intel counts cores by.',
+      role: 'The Xe-HPG compute building block: 16 vector engines and 16 matrix engines sharing a 192 KB L1/SLM and a thread dispatcher. Replaced the old "EU" organization (one Xe-core = 16 former EUs, one per XVE) and is the unit Intel counts cores by.',
       specs: [
         { label: "Count", value: "32" },
         { label: "XVE per core", value: "16" },
@@ -137,7 +137,7 @@ export const arcA770: Gpu = {
     xve: {
       name: "XVE (Xe Vector Engine)",
       type: "Execution unit",
-      role: "256-bit vector ALU executing 8 FP32 (or 16 FP16 / 32 INT8 via DP4A) operations per clock, with co-issued extended-math and INT pipes. Sixteen per Xe-core; each XVE keeps multiple hardware threads in flight to hide latency.",
+      role: "256-bit vector ALU executing 8 FP32 or 16 FP16 operations per clock (32 INT8 with DP4A), with co-issued extended-math and INT pipes. Sixteen per Xe-core; each XVE keeps multiple hardware threads in flight to hide latency.",
       specs: [
         { label: "Count", value: "512" },
         { label: "FP32 per clock", value: "8 per XVE" },
@@ -171,7 +171,7 @@ export const arcA770: Gpu = {
     rtu: {
       name: "RTU (Ray Tracing Unit)",
       type: "Fixed function",
-      role: "One per Xe-core: fixed-function BVH traversal and triangle intersection, plus a thread-sorting unit that regroups divergent ray-hit shading for SIMD coherence. It was Intel's answer to ray divergence, shipping ahead of NVIDIA's SER.",
+      role: "One per Xe-core: fixed-function BVH traversal and triangle intersection, plus a thread-sorting unit that regroups divergent ray-hit shading for SIMD coherence, the same problem NVIDIA's SER attacks on Ada.",
       specs: [
         { label: "Count", value: "32" },
         { label: "Traversal", value: "HW BVH + thread sorting" },
