@@ -92,7 +92,7 @@ export const rtx3090: Gpu = {
         { label: "TGP", value: "350 W" },
       ],
       pipeline: "Front end → GPC raster → SM shading → ROP blend → 6 MB L2 → GDDR6X. The small L2 places most traffic on the 936 GB/s DRAM interface.",
-      programming: "Compile with -arch=sm_86. Ampere compute features (cp.async, structured sparsity, 3rd-gen Tensor Cores) are present; occupancy is capped at 1536 threads per SM and FP64 executes at 1/64 of the FP32 rate.",
+      programming: "Compile with -arch=sm_86. The Ampere compute features are present: cp.async copies global memory directly into shared memory without staging through registers, structured sparsity doubles Tensor Core throughput on weights pruned so that two of every four are zero, and the Tensor Cores match GA100's third generation. Occupancy is capped at 1536 threads per SM and FP64 executes at 1/64 of the FP32 rate.",
     },
     gpc: {
       name: "GPC (GPU Processing Cluster)",

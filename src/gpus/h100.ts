@@ -99,7 +99,7 @@ export const h100: Gpu = {
         { label: "TDP", value: "700 W" },
       ],
       pipeline: "Work arrives over PCIe Gen5 or NVLink, is queued by the GigaThread Engine, and is distributed as thread blocks to SMs inside the 8 GPCs. Memory traffic flows SM → L1 → L2 partition → HBM3 controllers on the die edges.",
-      programming: "Compile with -arch=sm_90 (CUDA 12+). Hopper adds thread block clusters, distributed shared memory, the Tensor Memory Accelerator, and FP8 via the Transformer Engine; each feature serves Tensor Core utilization.",
+      programming: "Compile with -arch=sm_90 (CUDA 12+). Hopper adds thread block clusters, which schedule a group of blocks together on one GPC so they can cooperate; distributed shared memory, which lets those blocks read and write each other's shared memory directly; and the Tensor Memory Accelerator, a per-SM engine that copies tensor tiles while the warps compute. FP8 arrives through the Transformer Engine, which chooses between FP8 and FP16 per layer to hold accuracy while doubling throughput.",
     },
     gpc: {
       name: "GPC (GPU Processing Cluster)",
@@ -144,7 +144,7 @@ export const h100: Gpu = {
     l2: {
       name: "L2 cache partition",
       type: "Cache",
-      role: "50 MB in two 25 MB partitions joined by a crossbar, each serving the HBM controllers on its half of the die. Capacity converts data reuse into avoided HBM transactions. Residency windows allow software to pin address ranges, and sparse data is compressed in place.",
+      role: "50 MB in two 25 MB partitions joined by a crossbar, each serving the HBM controllers on its half of the die. Capacity converts data reuse into avoided HBM transactions. The cache supports residency windows: software marks an address range as persistent, and the L2 holds it resident while streaming traffic passes through the rest, which benefits weights and lookup tables that are reread constantly. It also applies compute-data compression, compacting zero-heavy data as it is written, which raises effective capacity and bandwidth for sparse tensors.",
       specs: [
         { label: "Capacity", value: "50 MB (60 MB full die)" },
         { label: "Partitions", value: "2 × 25 MB" },
@@ -170,7 +170,7 @@ export const h100: Gpu = {
     nvlink: {
       name: "NVLink 4",
       type: "Interconnect",
-      role: "Eighteen NVLink 4 ports, 25 GB/s per direction each, 900 GB/s aggregate. Through NVSwitch, remote HBM is load/store-addressable across eight GPUs, and SHARP in-network reduction executes collective arithmetic in the switch, reducing all-reduce traffic at the source.",
+      role: "Eighteen NVLink 4 ports, 25 GB/s per direction each, 900 GB/s aggregate. Through NVSwitch, remote HBM is load/store-addressable across eight GPUs, and SHARP in-network reduction sums tensors inside the switch as they pass through, so an all-reduce moves each operand once instead of once per participating GPU.",
       specs: [
         { label: "Links", value: "18 × 50 GB/s bidir" },
         { label: "Aggregate", value: "900 GB/s" },

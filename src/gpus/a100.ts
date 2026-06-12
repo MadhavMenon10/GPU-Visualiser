@@ -87,7 +87,7 @@ export const a100: Gpu = {
     die: {
       name: "GA100 (A100 SXM4)",
       type: "Die overview",
-      role: "GA100: 826 mm² on TSMC N7, 54.2 billion transistors; the largest 7 nm die in production at launch. A100 enables 108 of 128 SMs across 7 of 8 GPCs, and 5 of 6 HBM2e stacks; fused positions vary per die. Ampere introduced TF32, 2:4 structured sparsity, asynchronous copy, and Multi-Instance GPU. Floorplan is schematic; proportions approximate.",
+      role: "GA100: 826 mm² on TSMC N7, 54.2 billion transistors; the largest 7 nm die in production at launch. A100 enables 108 of 128 SMs across 7 of 8 GPCs, and 5 of 6 HBM2e stacks; fused positions vary per die. Ampere introduced TF32, a format with FP32's range that runs unmodified float code on the Tensor Cores; 2:4 structured sparsity, which doubles matrix throughput when two of every four weights are zero; asynchronous copy from HBM into shared memory; and Multi-Instance GPU, which splits the device into isolated tenants. Floorplan is schematic; proportions approximate.",
       specs: [
         { label: "Process", value: "TSMC N7" },
         { label: "Transistors", value: "54.2 B" },
@@ -106,7 +106,7 @@ export const a100: Gpu = {
         { label: "TDP", value: "400 W" },
       ],
       pipeline: "Host work enters over PCIe Gen4, the GigaThread Engine distributes thread blocks to SMs in the 7 active GPCs, and memory traffic drains through the two-partition L2 to the HBM2e controllers on the die edges.",
-      programming: "Compile with -arch=sm_80. cp.async transfers global memory to shared memory without register staging and underlies pipelined matmul and attention kernels. TF32 is the default cuBLAS/cuDNN matmul mode; L2 residency windows first appear in this generation.",
+      programming: "Compile with -arch=sm_80. cp.async transfers global memory to shared memory without register staging and underlies pipelined matmul and attention kernels. TF32 is the default cuBLAS/cuDNN matmul mode. L2 residency windows, which let software pin an address range resident in the cache, first appear in this generation.",
     },
     gpc: {
       name: "GPC (GPU Processing Cluster)",
@@ -134,7 +134,7 @@ export const a100: Gpu = {
     sm: {
       name: "SM (Streaming Multiprocessor)",
       type: "Compute unit",
-      role: "Four partitions per SM, each with a warp scheduler, a 64 KB register file slice, 16 FP32, 16 INT32 and 8 FP64 lanes, and one third-generation Tensor Core. This generation added TF32 (FP32 range, 10-bit mantissa, usable by unmodified FP32 code), BF16, FP64 matrix arithmetic, and 2:4 structured sparsity, which doubles throughput for conformant weight patterns. Asynchronous copy overlaps HBM-to-shared-memory transfers with computation.",
+      role: "Four partitions per SM, each with a warp scheduler, a 64 KB register file slice, 16 FP32, 16 INT32 and 8 FP64 lanes, and one third-generation Tensor Core. This generation added TF32 (FP32 range, 10-bit mantissa, usable by unmodified FP32 code), BF16, FP64 matrix arithmetic, and 2:4 structured sparsity, which doubles Tensor Core throughput when weights are pruned so that two of every four are zero. Asynchronous copy overlaps HBM-to-shared-memory transfers with computation.",
       specs: [
         { label: "Count", value: "108" },
         { label: "FP32 / INT32 / FP64", value: "64 / 64 / 32 per SM" },
@@ -150,7 +150,7 @@ export const a100: Gpu = {
     l2: {
       name: "L2 cache partition",
       type: "Cache",
-      role: "Two 20 MB partitions joined by a partitioned crossbar; 6.7× the capacity of V100, sufficient to hold activation tensors of typical layer sizes on-die between kernels. Each partition serves the HBM controllers on its half. Supports residency control and compute-data compression; MIG slices the cache per instance.",
+      role: "Two 20 MB partitions joined by a partitioned crossbar; 6.7× the capacity of V100, sufficient to hold activation tensors of typical layer sizes on-die between kernels. Each partition serves the HBM controllers on its half. The cache provides residency control, letting software pin hot address ranges so that streaming traffic cannot evict them, and compute-data compression, which compacts compressible data on write and raises effective capacity and bandwidth. Under MIG, each instance receives its own dedicated slice of this cache.",
       specs: [
         { label: "Capacity", value: "40 MB (48 MB full die)" },
         { label: "Partitions", value: "2 × 20 MB" },

@@ -85,7 +85,7 @@ export const mi300x: Gpu = {
         { label: "TDP", value: "750 W" },
       ],
       pipeline: "Kernels dispatch through per-XCD command processors and ACEs to the CUs; memory requests flow CU → XCD L2 → Infinity Fabric on the IODs → Infinity Cache → HBM3 controllers adjacent to each stack.",
-      programming: "Target gfx942 with ROCm/HIP; wavefronts are 64 lanes. The package presents as one logical GPU (SPX) or as eight per-XCD devices (CPX), with NPS1/NPS4 memory interleave modes.",
+      programming: "Target gfx942 with ROCm/HIP; wavefronts are 64 lanes. The package presents as one logical GPU (SPX) or as eight per-XCD devices (CPX). Memory interleaves across all eight stacks (NPS1) or binds each quadrant of stacks to its local XCDs (NPS4), trading uniformity for locality.",
     },
     iod: {
       name: "IOD (I/O die)",
@@ -115,7 +115,7 @@ export const mi300x: Gpu = {
     cu: {
       name: "CU (Compute Unit, CDNA 3)",
       type: "Compute unit",
-      role: "CDNA 3 compute unit: four SIMD16 vector pipes executing 64-lane wavefronts, full-rate FP64, 64 KB of LDS, and four matrix cores supporting FP8/BF8, TF32 and 2:4 structured sparsity. 304 CUs at 2.1 GHz produce 163 TFLOPS FP32, 1.3 PFLOPS FP16 and 2.6 PFLOPS FP8.",
+      role: "CDNA 3 compute unit: four SIMD16 vector pipes executing 64-lane wavefronts, full-rate FP64, 64 KB of LDS, and four matrix cores for matrix multiply-accumulate work. CDNA 3 adds the FP8/BF8 and TF32 formats to the matrix cores, along with 2:4 structured sparsity, which doubles matrix throughput when two of every four values are zero. 304 CUs at 2.1 GHz produce 163 TFLOPS FP32, 1.3 PFLOPS FP16 and 2.6 PFLOPS FP8.",
       specs: [
         { label: "Count", value: "304" },
         { label: "Stream processors", value: "64 per CU" },

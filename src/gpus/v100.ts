@@ -133,7 +133,7 @@ export const v100: Gpu = {
     l2: {
       name: "L2 cache",
       type: "Cache",
-      role: "A single 6 MB L2 serving all 80 SMs: every L1 miss, global atomic and HBM transfer passes through it. The capacity is small relative to later parts; A100 increased it 6.7×. The deficit is offset by HBM2 bandwidth. ROPs partner with the L2 slices, as the die renders.",
+      role: "A single 6 MB L2 serving all 80 SMs: every L1 miss, global atomic and HBM transfer passes through it. The capacity is small relative to later parts (A100 increased it 6.7×); the deficit is offset by HBM2 bandwidth. ROPs partner with the L2 slices, as the die renders.",
       specs: [
         { label: "Capacity", value: "6 MB" },
         { label: "ROPs", value: "128 (graphics SKUs)" },
@@ -180,7 +180,7 @@ export const v100: Gpu = {
     front: {
       name: "GigaThread Engine + copy engines",
       type: "Front end",
-      role: "Device-level thread block scheduler with context switching and, new in Volta, compute preemption at instruction granularity. Copy engines execute DMA transfers concurrently with kernels.",
+      role: "Device-level thread block scheduler with context switching and, new in Volta, compute preemption at instruction granularity: a running kernel can be suspended between any two instructions rather than only at kernel boundaries. Copy engines execute DMA transfers concurrently with kernels.",
       specs: [{ label: "Scheduling unit", value: "thread block" }],
       pipeline: "Every kernel launch passes through it to the GPCs.",
     },

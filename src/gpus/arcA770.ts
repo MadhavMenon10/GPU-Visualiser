@@ -137,7 +137,7 @@ export const arcA770: Gpu = {
     xve: {
       name: "XVE (Xe Vector Engine)",
       type: "Execution unit",
-      role: "256-bit SIMD ALU; sixteen per Xe-core, 512 per die. Each retires 8 FP32 or 16 FP16 operations per clock, or 32 INT8 via DP4A, with a co-issued extended-math pipe. Each XVE keeps several hardware threads resident and switches among them on stalls; this multithreading, not cache capacity, is the primary mechanism for hiding memory latency.",
+      role: "256-bit SIMD ALU; sixteen per Xe-core, 512 per die. Each retires 8 FP32 or 16 FP16 operations per clock, or 32 INT8 via DP4A, a four-element dot-product instruction; a separate extended-math pipe handles transcendental functions in parallel with the main ALU. Each XVE keeps several hardware threads resident and switches among them on stalls; this multithreading is the primary mechanism for hiding memory latency.",
       specs: [
         { label: "Count", value: "512" },
         { label: "FP32 per clock", value: "8 per XVE" },
@@ -149,7 +149,7 @@ export const arcA770: Gpu = {
     xmx: {
       name: "XMX (Xe Matrix Extensions engine)",
       type: "Execution unit",
-      role: "1024-bit systolic array; sixteen per Xe-core. Each computes 64 FP16/BF16 or 128 INT8 matrix operations per clock, 8× the rate of the XVE DP4A path, for a die total of approximately 138 INT8 TOPS. Dedicated matrix hardware was uncommon in a 2022 mid-range gaming die and is what makes real-time XeSS inference practical.",
+      role: "1024-bit systolic array, a pipelined grid of multiply-accumulate units through which matrix tiles stream; sixteen per Xe-core. Each computes 64 FP16/BF16 or 128 INT8 matrix operations per clock, 8× the rate of the XVE DP4A path, for a die total of approximately 138 INT8 TOPS. Dedicated matrix hardware was uncommon in a 2022 mid-range gaming die and is what makes real-time XeSS inference practical.",
       specs: [
         { label: "Count", value: "512" },
         { label: "FP16 throughput", value: "~69 TFLOPS total" },
