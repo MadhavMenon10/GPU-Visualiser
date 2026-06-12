@@ -80,7 +80,7 @@ export const h100: Gpu = {
     die: {
       name: "GH100 (H100 SXM5)",
       type: "Die overview",
-      role: "The GPU of the LLM boom: 814 mm² of TSMC 4N silicon and 80 billion transistors, organized to spend nearly all of it on tensor math. The SXM5 part enables 132 of 144 SMs and 5 of 6 HBM3 stacks; which physical units go dark varies die to die, because fusing follows wherever the defects landed. The proportions tell the story of modern compute: a thin strip of front end along the top, two large fields of GPCs, 50 MB of L2 splitting the middle, and the entire left and right edges handed to memory. Floorplan is schematic: block placement follows the published die organization, proportions are approximate.",
+      role: "GH100: 814 mm² on TSMC 4N, 80 billion transistors. The SXM5 product enables 132 of 144 SMs and 5 of 6 HBM3 stacks; fused positions follow defect locations and vary per die. Die area is dominated by the eight GPC fields, a 50 MB L2 in two central partitions, and the HBM interfaces on both long edges. Floorplan is schematic; proportions approximate.",
       specs: [
         { label: "Process", value: "TSMC 4N (custom 5 nm)" },
         { label: "Transistors", value: "80 B" },
@@ -99,12 +99,12 @@ export const h100: Gpu = {
         { label: "TDP", value: "700 W" },
       ],
       pipeline: "Work arrives over PCIe Gen5 or NVLink, is queued by the GigaThread Engine, and is distributed as thread blocks to SMs inside the 8 GPCs. Memory traffic flows SM → L1 → L2 partition → HBM3 controllers on the die edges.",
-      programming: "Compile with -arch=sm_90 (CUDA 12+). Hopper's additions mostly exist to keep the Tensor Cores fed: thread block clusters let blocks cooperate across SMs, distributed shared memory lets them read each other's scratchpads, and the TMA streams tensor tiles in bulk while the warps compute. FP8 arrives through the Transformer Engine.",
+      programming: "Compile with -arch=sm_90 (CUDA 12+). Hopper adds thread block clusters, distributed shared memory, the Tensor Memory Accelerator, and FP8 via the Transformer Engine; each feature serves Tensor Core utilization.",
     },
     gpc: {
       name: "GPC (GPU Processing Cluster)",
       type: "Compute cluster",
-      role: "Top-level compute partition holding up to 9 TPCs (18 SMs) and its own work distribution unit. Two things give the GPC meaning beyond bookkeeping. Hopper's thread block clusters are scoped to it, so every block of a cluster is guaranteed to be resident on SMs of the same GPC, which is what makes SM-to-SM shared memory access practical. And MIG carves the die into isolated instances along GPC boundaries, making the GPC the quantum of multi-tenancy as well.",
+      role: "Top-level compute partition: up to 9 TPCs (18 SMs) with local work distribution. Thread block clusters are scoped to one GPC, which guarantees the co-residency required for SM-to-SM distributed shared memory. MIG partitions the device on GPC boundaries.",
       specs: [
         { label: "Count", value: "8" },
         { label: "TPCs per GPC", value: "8-9 enabled (9 physical)" },
@@ -112,12 +112,12 @@ export const h100: Gpu = {
         { label: "MIG", value: "instances partition on GPC boundaries" },
       ],
       pipeline: "The GigaThread Engine load-balances thread blocks across GPCs; within a GPC, a work distribution unit assigns blocks to individual SMs.",
-      programming: "CUDA 12 thread block clusters (cluster_dims) map onto a single GPC, enabling SM-to-SM distributed shared memory and cluster barriers.",
+      programming: "CUDA 12 thread block clusters (cluster_dims) map onto a single GPC, enabling distributed shared memory and cluster barriers.",
     },
     tpc: {
       name: "TPC (Texture Processing Cluster)",
       type: "SM pair",
-      role: "A pair of SMs sharing front-end plumbing. The name is a fossil from graphics dies; GH100 keeps texture units, but only two TPCs on the whole die retain full graphics pipelines and everything else is pure compute. The TPC's real job today is yield management: when a defect lands here, the whole TPC is fused off, and the SXM5 part ships with 66 of 72 alive. Hatched blocks mark the fused ones; the true positions vary per chip.",
+      role: "Two SMs sharing front-end plumbing. The name is legacy; only two TPCs on GH100 retain graphics pipelines. The TPC is the granularity of yield harvesting: SXM5 enables 66 of 72, with fused positions varying per part.",
       specs: [
         { label: "SMs per TPC", value: "2" },
         { label: "Enabled", value: "66 of 72 (SXM5)" },
@@ -127,7 +127,7 @@ export const h100: Gpu = {
     sm: {
       name: "SM (Streaming Multiprocessor)",
       type: "Compute unit",
-      role: "The unit your CUDA code actually lands on, 132 of them here. Each SM splits into four partitions, and each partition owns a warp scheduler issuing one 32-thread instruction per clock, a 64 KB register file slice, 32 FP32, 16 INT32 and 16 FP64 lanes, and one 4th-gen Tensor Core that now speaks FP8. Hopper's quiet addition is the per-SM Tensor Memory Accelerator, an address-generation engine that copies whole tensor tiles between global and shared memory by itself, so the warps that used to spend issue slots on copying spend them on math.",
+      role: "Four partitions per SM, each with a warp scheduler issuing one 32-thread instruction per clock, a 64 KB register file slice, 32 FP32, 16 INT32 and 16 FP64 lanes, and one fourth-generation Tensor Core with FP8 support. The per-SM Tensor Memory Accelerator generates addresses and copies tensor tiles between global and shared memory asynchronously, freeing warp issue slots for arithmetic.",
       specs: [
         { label: "Count", value: "132" },
         { label: "FP32 / INT32 / FP64", value: "128 / 64 / 64 per SM" },
@@ -139,12 +139,12 @@ export const h100: Gpu = {
         { label: "TMA", value: "1 per SM" },
       ],
       pipeline: "Receives thread blocks from GPC work distribution, schedules warps onto partition pipelines; loads/stores go through the LSU to L1, then L2 and HBM. Tensor Core operands stream from registers and shared memory.",
-      programming: "One CUDA thread block executes on exactly one SM; warps of 32 threads are the scheduling unit. __shared__ lives in the L1 carveout. sm_90 exposes TMA (cp.async.bulk / cuda::memcpy_async) and DSMEM access to other SMs in the cluster.",
+      programming: "One thread block executes on exactly one SM; warps of 32 threads are the scheduling unit. __shared__ lives in the L1 carveout. sm_90 exposes TMA (cp.async.bulk / cuda::memcpy_async) and DSMEM access within a cluster.",
     },
     l2: {
       name: "L2 cache partition",
       type: "Cache",
-      role: "50 MB of cache standing between the SMs and HBM, split into two 25 MB partitions joined by a crossbar, each serving the memory controllers on its own half of the die. The intuition is simple: every reuse caught here is an HBM trip avoided, and when the machine is built to stream terabytes per second, small changes in hit rate move real training throughput. Software can pin hot working sets into residency, and the hardware compresses sparse data losslessly on the way through.",
+      role: "50 MB in two 25 MB partitions joined by a crossbar, each serving the HBM controllers on its half of the die. Capacity converts data reuse into avoided HBM transactions. Residency windows allow software to pin address ranges, and sparse data is compressed in place.",
       specs: [
         { label: "Capacity", value: "50 MB (60 MB full die)" },
         { label: "Partitions", value: "2 × 25 MB" },
@@ -156,7 +156,7 @@ export const h100: Gpu = {
     hbm: {
       name: "HBM3 stack + memory controllers",
       type: "Memory interface",
-      role: "Each site along the edge is one HBM3 stack sitting beside the die on the CoWoS interposer, driven by two 512-bit controllers. The SXM5 card runs 5 of 6 sites: 10 controllers forming a 5120-bit aggregate bus that moves 3.35 TB/s to 80 GB. One site stays dark for yield (hatched; the physical site varies per part). The edge placement is forced, because PHYs have to reach the interposer wiring and the shortest way off the die is its boundary.",
+      role: "Each edge site is one HBM3 stack on the CoWoS interposer, driven by two 512-bit controllers. SXM5 populates 5 of 6 sites: 10 controllers, a 5120-bit aggregate bus, 3.35 TB/s to 80 GB. One site is fused for yield; its position varies per part. PHYs occupy the edges to reach the interposer wiring.",
       specs: [
         { label: "Stacks", value: "5 of 6 enabled" },
         { label: "Controllers", value: "10 × 512-bit" },
@@ -164,52 +164,52 @@ export const h100: Gpu = {
         { label: "Bandwidth", value: "3.35 TB/s" },
         { label: "ECC", value: "on-die + link ECC" },
       ],
-      pipeline: "Terminal level of the memory hierarchy: L2 partition misses are serviced here. Controller interleaving spreads contiguous addresses across stacks.",
-      programming: "Global memory (cudaMalloc) resides here. Coalesced 32-byte sector access patterns are required to approach peak bandwidth.",
+      pipeline: "Terminal level of the memory hierarchy; L2 partition misses are serviced here. Controller interleaving spreads contiguous addresses across stacks.",
+      programming: "Global memory (cudaMalloc) resides here. Coalesced 32-byte sector access is required to approach peak bandwidth.",
     },
     nvlink: {
       name: "NVLink 4",
       type: "Interconnect",
-      role: "Eighteen NVLink 4 ports along the die edge, 25 GB/s in each direction, 900 GB/s aggregate, roughly seven times what the PCIe link manages. Through NVSwitch these links make eight H100s behave like one large memory machine: remote HBM is directly load/store addressable, and the switch can reduce tensors in flight (SHARP), shrinking all-reduce traffic before it even reaches the wires.",
+      role: "Eighteen NVLink 4 ports, 25 GB/s per direction each, 900 GB/s aggregate. Through NVSwitch, remote HBM is load/store-addressable across eight GPUs, and SHARP in-network reduction executes collective arithmetic in the switch, reducing all-reduce traffic at the source.",
       specs: [
         { label: "Links", value: "18 × 50 GB/s bidir" },
         { label: "Aggregate", value: "900 GB/s" },
         { label: "Fabric", value: "NVSwitch 3, SHARP" },
       ],
-      pipeline: "Peer traffic bypasses PCIe entirely: remote loads/stores and NCCL collectives move L2-to-L2 between GPUs.",
-      programming: "Exposed via cudaDeviceEnablePeerAccess, NCCL and NVSHMEM; unified addressing makes remote HBM directly load/store-addressable.",
+      pipeline: "Peer traffic bypasses PCIe; remote loads/stores and NCCL collectives move L2-to-L2 between GPUs.",
+      programming: "Exposed via cudaDeviceEnablePeerAccess, NCCL and NVSHMEM; unified addressing makes remote HBM directly addressable.",
     },
     pcie: {
       name: "PCIe Gen5 host interface",
       type: "Interconnect",
-      role: "Sixteen lanes of PCIe Gen5 at 64 GB/s per direction. It carries kernel launches, the host copies that NVLink does not handle, and GPUDirect RDMA traffic from NICs and storage. On an SXM board this is the management and ingest path; the heavy GPU-to-GPU lifting belongs to NVLink.",
+      role: "x16 PCIe Gen5, 64 GB/s per direction: command submission, host copies not routed over NVLink, and GPUDirect RDMA from NICs and storage.",
       specs: [
         { label: "Link", value: "Gen5 ×16" },
         { label: "Bandwidth", value: "~128 GB/s bidir" },
       ],
-      pipeline: "Front door from the host: kernel launches and DMA descriptors enter here before the GigaThread Engine schedules them.",
+      pipeline: "Entry point for host-originated work; kernel launches and DMA descriptors pass to the GigaThread Engine.",
     },
     front: {
       name: "GigaThread Engine + copy engines",
       type: "Front end",
-      role: "The die's dispatcher. The GigaThread Engine takes grid launches off the host queues and deals thread blocks out across the eight GPCs, respecting occupancy limits and cluster co-residency; it also handles context switching and preemption. The copy engines beside it are DMA units moving data between host and device memory while kernels run. The same front-end hardware enforces MIG, splitting the die into as many as seven isolated GPUs for multi-tenant serving.",
+      role: "Receives grid launches from host queues and distributes thread blocks across the eight GPCs under occupancy and cluster-residency constraints, with context switching and preemption. Copy engines execute DMA concurrently with kernels. MIG hardware partitions the device into up to seven isolated instances.",
       specs: [
         { label: "Scheduling unit", value: "thread block / cluster" },
         { label: "MIG", value: "up to 7 instances" },
       ],
-      pipeline: "Sits between the host interface and the GPCs; every kernel launch passes through it.",
+      pipeline: "Between the host interface and the GPCs; every kernel launch passes through it.",
       programming: "CUDA streams and grid launches are mediated here; concurrent kernels and async memcpy overlap depend on its scheduling.",
     },
     media: {
       name: "Media engines",
       type: "Fixed function",
-      role: "Seven NVDEC video decoders and seven NVJPG JPEG engines, with no encoder at all. The asymmetry describes the customer: inference farms ingest oceans of video and images, so decode gets silicon, while output is tokens and tensors, so encode gets none. DALI-style pipelines decode straight into HBM where the SMs pick frames up without a host round trip.",
+      role: "Seven NVDEC video decoders and seven NVJPG JPEG decoders; no encoder. The configuration matches inference ingest, where decode demand is continuous and encode demand is absent. Output is written to HBM for direct SM consumption.",
       specs: [
         { label: "NVDEC", value: "7" },
         { label: "NVJPG", value: "7" },
         { label: "NVENC", value: "none" },
       ],
-      pipeline: "Decode output lands in HBM for consumption by SMs without round-tripping to the host.",
+      pipeline: "Decode output lands in HBM without a host round trip.",
     },
   },
 }

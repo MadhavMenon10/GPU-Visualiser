@@ -66,7 +66,7 @@ export const mi300x: Gpu = {
     die: {
       name: "MI300X (CDNA 3 package)",
       type: "Package overview",
-      role: "The most aggressively packaged GPU of its generation. Rather than one large die, MI300X stacks eight N5 compute chiplets (XCDs) directly on top of four N6 I/O dies with hybrid bonding, then rings the assembly with eight HBM3 stacks on a CoWoS interposer: 153 billion transistors and ~1017 mm² of active silicon in a single socket. The idea behind the stack is separation of concerns. Cache, fabric and memory controllers live in the base layer, so the expensive N5 silicon above is spent almost entirely on compute. The floorplan flattens the 3D arrangement: each XCD pair is drawn beside the IOD it physically sits on. View is schematic; proportions approximate.",
+      role: "CDNA 3 accelerator built by 3.5D integration: eight N5 compute dies (XCDs) hybrid-bonded onto four N6 I/O dies, surrounded by eight HBM3 stacks on a CoWoS interposer; 153 billion transistors and approximately 1017 mm² of active silicon. Cache, fabric and memory controllers reside in the base dies, so N5 area is spent almost entirely on compute. The floorplan flattens the stack: each XCD pair is drawn beside the IOD it sits on. View is schematic; proportions approximate.",
       specs: [
         { label: "Chiplets", value: "8× XCD (N5) on 4× IOD (N6)" },
         { label: "Transistors", value: "153 B" },
@@ -85,12 +85,12 @@ export const mi300x: Gpu = {
         { label: "TDP", value: "750 W" },
       ],
       pipeline: "Kernels dispatch through per-XCD command processors and ACEs to the CUs; memory requests flow CU → XCD L2 → Infinity Fabric on the IODs → Infinity Cache → HBM3 controllers adjacent to each stack.",
-      programming: "Target gfx942 with ROCm and HIP; wavefronts are 64 lanes wide, double the width of a CUDA warp. The package can present as one logical GPU (SPX mode) or as eight independent devices, one per XCD (CPX mode), with NPS1/NPS4 memory interleave modes to match.",
+      programming: "Target gfx942 with ROCm/HIP; wavefronts are 64 lanes. The package presents as one logical GPU (SPX) or as eight per-XCD devices (CPX), with NPS1/NPS4 memory interleave modes.",
     },
     iod: {
       name: "IOD (I/O die)",
       type: "Chiplet",
-      role: "The base layer of the stack, doing the unglamorous work. Each of the four N6 dies carries a quarter of the Infinity Fabric network-on-chip, a 64 MB slice of Infinity Cache, the controllers for its two adjacent HBM3 stacks, and PHYs for the external links. Two compute dies sit hybrid-bonded on top at a bond pitch around 9 µm, fine enough that dropping through the TSVs costs far less than a conventional chiplet hop. The four IODs stitch into one coherent fabric, so any CU can reach any byte of HBM; it is simply faster when the byte is local.",
+      role: "Base-layer N6 die. Each carries one quarter of the Infinity Fabric network-on-chip, a 64 MB Infinity Cache slice, the controllers for its two adjacent HBM3 stacks, and external link PHYs. Two XCDs are hybrid-bonded on top at a pitch of approximately 9 µm; a TSV crossing costs far less than a package-level chiplet link. The four IODs form one coherent fabric: any CU reaches any byte of HBM, at lower latency when the address is local.",
       specs: [
         { label: "Count", value: "4" },
         { label: "Process", value: "TSMC N6" },
@@ -102,7 +102,7 @@ export const mi300x: Gpu = {
     xcd: {
       name: "XCD (Accelerator Complex Die)",
       type: "Compute chiplet",
-      role: "A compute chiplet: 40 physical CUs on N5, 38 of them enabled for yield, fronted by its own command processor, four async compute engines and a hardware scheduler, all sharing a 4 MB L2. The XCD is deliberately self-sufficient. Because it can fetch, schedule and cache on its own, AMD can also expose it as an independent GPU partition (CPX mode), which inference services use to pin one model replica per XCD. Eight of them give the package its 304 CUs.",
+      role: "N5 compute die: 40 physical CUs with 38 enabled for yield, a command processor, four asynchronous compute engines, a hardware scheduler, and a shared 4 MB L2. Each XCD fetches, schedules and caches independently, which is what permits per-XCD partitioning in CPX mode. Eight XCDs provide the package's 304 CUs.",
       specs: [
         { label: "Count", value: "8" },
         { label: "CUs", value: "38 enabled of 40" },
@@ -115,7 +115,7 @@ export const mi300x: Gpu = {
     cu: {
       name: "CU (Compute Unit, CDNA 3)",
       type: "Compute unit",
-      role: "The workhorse, 304 of them on the package. Each CDNA 3 CU runs 64-lane wavefronts across four SIMD16 vector pipes, keeps full-rate FP64 for the HPC crowd, and holds 64 KB of local data share for workgroup scratch. Beside the vector pipes sit four matrix cores for the dense multiply-accumulate work that dominates machine learning; this generation taught them FP8, BF8 and TF32, plus 2:4 structured sparsity. Multiply 304 CUs by widths and clocks and you arrive at the headline rates: 163 TFLOPS FP32, 1.3 PFLOPS FP16, 2.6 PFLOPS FP8.",
+      role: "CDNA 3 compute unit: four SIMD16 vector pipes executing 64-lane wavefronts, full-rate FP64, 64 KB of LDS, and four matrix cores supporting FP8/BF8, TF32 and 2:4 structured sparsity. 304 CUs at 2.1 GHz produce 163 TFLOPS FP32, 1.3 PFLOPS FP16 and 2.6 PFLOPS FP8.",
       specs: [
         { label: "Count", value: "304" },
         { label: "Stream processors", value: "64 per CU" },
@@ -125,12 +125,12 @@ export const mi300x: Gpu = {
         { label: "Wavefront", value: "64 lanes" },
       ],
       pipeline: "Executes wave64s from the XCD scheduler; LDS is on-CU, memory ops go L1 → XCD L2 → IOD fabric.",
-      programming: "HIP workgroup → CU; __shared__ → LDS. Matrix cores are reached via rocWMMA / MFMA compiler intrinsics or rocBLAS/hipBLASLt.",
+      programming: "HIP workgroup → CU; __shared__ → LDS. Matrix cores are reached via rocWMMA / MFMA intrinsics or rocBLAS/hipBLASLt.",
     },
     l2: {
       name: "XCD L2 cache",
       type: "Cache",
-      role: "4 MB of cache on each compute die, the last memory level that lives above the stack. It is coherent within its own XCD; anything shared across XCDs gets reconciled one level down in the Infinity Cache. The practical consequence: a working set that fits in one XCD's L2 never pays the trip through the TSVs at all, which is why partition-friendly workloads run cheaper than ones that scatter reads across the whole package.",
+      role: "4 MB per XCD; the last memory level on the compute die. Coherent within its XCD; cross-XCD sharing is resolved in the Infinity Cache below. A working set contained in one XCD's L2 avoids TSV crossings entirely, so partition-local workloads run at lower memory cost.",
       specs: [
         { label: "Per XCD", value: "4 MB" },
         { label: "Total", value: "32 MB" },
@@ -140,7 +140,7 @@ export const mi300x: Gpu = {
     ic: {
       name: "Infinity Cache + fabric",
       type: "Cache (IOD)",
-      role: "256 MB of SRAM spread across the base dies, 64 MB per IOD, parked directly in front of the HBM controllers. It is a memory-side cache: it holds whichever HBM lines are hot regardless of which XCD asked for them, so when all eight XCDs stream the same model weights, one HBM fetch serves everybody. Internal bandwidth runs around 17 TB/s, roughly triple what the HBM itself delivers, and that multiplier is what keeps 19 456 stream processors from starving.",
+      role: "Memory-side cache: 64 MB per IOD, 256 MB total, placed directly ahead of the HBM controllers. It holds hot HBM lines regardless of which XCD requested them, so data read by all eight XCDs is fetched from DRAM once. Internal bandwidth is approximately 17 TB/s, roughly 3× the HBM bandwidth.",
       specs: [
         { label: "Per IOD", value: "64 MB" },
         { label: "Total", value: "256 MB" },
@@ -151,7 +151,7 @@ export const mi300x: Gpu = {
     hbm: {
       name: "HBM3 stack",
       type: "Memory interface",
-      role: "Eight HBM3 stacks surround the compute, each 12 dies high and 24 GB, for 192 GB at 5.3 TB/s. Capacity was the headline feature: in 2024 a single MI300X could hold a 70B-parameter model in FP16 with room left for KV cache, which removed the tensor-parallel plumbing entire model classes used to require. Each stack talks to controllers on its adjacent IOD, so the physical placement of two stacks per IOD edge mirrors the logical NPS4 memory quadrants.",
+      role: "Eight 12-high 24 GB HBM3 stacks: 192 GB at 5.3 TB/s. The capacity holds a 70B-parameter FP16 model plus KV cache on a single device, removing the tensor-parallel decomposition such models previously required. Each stack is driven by controllers on its adjacent IOD; the two-stacks-per-IOD placement corresponds to the NPS4 memory quadrants.",
       specs: [
         { label: "Stacks", value: "8 × 24 GB" },
         { label: "Bus", value: "8192-bit total" },
@@ -165,24 +165,24 @@ export const mi300x: Gpu = {
     if: {
       name: "Infinity Fabric link",
       type: "Interconnect",
-      role: "The scale-out wiring. Seven external x16 Infinity Fabric links per GPU at 128 GB/s each (896 GB/s aggregate) let eight MI300X packages on an OAM baseboard form a full mesh: every GPU exactly one hop from every other, with no switch silicon in between. The all-reduce traffic of training runs and the all-to-all chatter of tensor-parallel inference ride these links through RCCL.",
+      role: "Seven external x16 Infinity Fabric links, 128 GB/s each, 896 GB/s aggregate. Eight MI300X packages on an OAM baseboard form a full mesh, every GPU one hop from every other, with no switch hardware. RCCL collectives and peer transfers traverse these links.",
       specs: [
         { label: "Links", value: "7 × x16" },
         { label: "Per link", value: "128 GB/s" },
         { label: "Topology", value: "full mesh, 8 GPUs" },
       ],
       pipeline: "Peer GPU traffic moves fabric-to-fabric without host involvement.",
-      programming: "RCCL collectives and HIP peer access ride these links; the full mesh removes ring-topology constraints.",
+      programming: "RCCL collectives and HIP peer access use these links; the full mesh removes ring-topology constraints.",
     },
     pcie: {
       name: "PCIe Gen5 host interface",
       type: "Interconnect",
-      role: "Sixteen lanes of PCIe Gen5 to the host CPU, 64 GB/s in each direction. Command submission, host-side tensors and checkpoint traffic come through here, while anything latency-critical between GPUs takes the Infinity Fabric links instead.",
+      role: "x16 PCIe Gen5 link, 64 GB/s per direction, carrying command submission and host transfers. Inter-GPU traffic uses the Infinity Fabric links.",
       specs: [
         { label: "Link", value: "Gen5 ×16" },
         { label: "Bandwidth", value: "~128 GB/s bidir" },
       ],
-      pipeline: "Host front door.",
+      pipeline: "Entry point for host-originated work.",
     },
   },
 }

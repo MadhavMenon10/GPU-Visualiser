@@ -87,7 +87,7 @@ export const a100: Gpu = {
     die: {
       name: "GA100 (A100 SXM4)",
       type: "Die overview",
-      role: "The die that carried deep learning through the GPT-3 era: 826 mm² on TSMC N7 and 54.2 billion transistors, the largest 7 nm chip in production at launch. The A100 product enables 108 of the 128 physical SMs across 7 of 8 GPCs, plus 5 of 6 HBM2e stacks; the dark units are yield fuses whose physical positions vary per die. Ampere's feature list reads like the things ML programmers now take for granted: TF32 so existing FP32 code got tensor speed without edits, structured sparsity, asynchronous copy, and MIG for slicing one GPU into seven. Floorplan is schematic: placement follows the published organization, proportions approximate.",
+      role: "GA100: 826 mm² on TSMC N7, 54.2 billion transistors; the largest 7 nm die in production at launch. A100 enables 108 of 128 SMs across 7 of 8 GPCs, and 5 of 6 HBM2e stacks; fused positions vary per die. Ampere introduced TF32, 2:4 structured sparsity, asynchronous copy, and Multi-Instance GPU. Floorplan is schematic; proportions approximate.",
       specs: [
         { label: "Process", value: "TSMC N7" },
         { label: "Transistors", value: "54.2 B" },
@@ -106,12 +106,12 @@ export const a100: Gpu = {
         { label: "TDP", value: "400 W" },
       ],
       pipeline: "Host work enters over PCIe Gen4, the GigaThread Engine distributes thread blocks to SMs in the 7 active GPCs, and memory traffic drains through the two-partition L2 to the HBM2e controllers on the die edges.",
-      programming: "Compile with -arch=sm_80. cp.async copies global memory into shared memory without staging through registers, the primitive modern attention kernels are built on. TF32 runs by default in cuBLAS/cuDNN matmuls, and L2 residency windows first appeared here.",
+      programming: "Compile with -arch=sm_80. cp.async transfers global memory to shared memory without register staging and underlies pipelined matmul and attention kernels. TF32 is the default cuBLAS/cuDNN matmul mode; L2 residency windows first appear in this generation.",
     },
     gpc: {
       name: "GPC (GPU Processing Cluster)",
       type: "Compute cluster",
-      role: "Top-level compute partition: up to 8 TPCs (16 SMs) with its own work distribution, and no raster hardware anywhere, since GA100 never renders a pixel. A100 ships with one entire GPC fused dark, drawn here as the solid hatched block. The GPC is also the unit MIG thinks in: an isolated instance is assembled from whole GPCs plus dedicated L2 and DRAM slices, which is how seven tenants can share one die without touching each other's bandwidth.",
+      role: "Up to 8 TPCs (16 SMs) with local work distribution; no raster hardware, as GA100 does not render. One full GPC is fused on A100, drawn here as the hatched block. MIG assembles instances from whole GPCs with dedicated L2 and DRAM slices, providing hardware isolation between tenants.",
       specs: [
         { label: "Count", value: "7 enabled (8 physical)" },
         { label: "TPCs per GPC", value: "7-8 enabled (8 physical)" },
@@ -124,7 +124,7 @@ export const a100: Gpu = {
     tpc: {
       name: "TPC (Texture Processing Cluster)",
       type: "SM pair",
-      role: "A pair of SMs sharing front-end plumbing, purely organizational on this die now that the graphics pipeline is gone. It earns its place at manufacturing time: a defect takes out the whole TPC rather than the die, and A100 ships with 54 of 64 alive. Hatching marks fused pairs; the real positions vary chip to chip.",
+      role: "Two SMs sharing front-end plumbing; purely organizational on this die, which has no graphics pipeline. Yield harvesting operates at TPC granularity: 54 of 64 enabled, with positions varying per part.",
       specs: [
         { label: "SMs per TPC", value: "2" },
         { label: "Enabled", value: "54 of 64" },
@@ -134,7 +134,7 @@ export const a100: Gpu = {
     sm: {
       name: "SM (Streaming Multiprocessor)",
       type: "Compute unit",
-      role: "Four partitions per SM, each holding a warp scheduler, a 64 KB register file slice, 16 FP32, 16 INT32 and 8 FP64 lanes, and one 3rd-gen Tensor Core. This Tensor Core generation is where the format menu widened: TF32 keeps FP32's range with a 10-bit mantissa so legacy float code gets tensor throughput unmodified, BF16 arrives, FP64 matrix math serves the HPC crowd, and 2:4 structured sparsity doubles throughput when half the weights are zero in the right pattern. Asynchronous copy lets data stream from HBM into shared memory while the warps keep computing over the previous tile.",
+      role: "Four partitions per SM, each with a warp scheduler, a 64 KB register file slice, 16 FP32, 16 INT32 and 8 FP64 lanes, and one third-generation Tensor Core. This generation added TF32 (FP32 range, 10-bit mantissa, usable by unmodified FP32 code), BF16, FP64 matrix arithmetic, and 2:4 structured sparsity, which doubles throughput for conformant weight patterns. Asynchronous copy overlaps HBM-to-shared-memory transfers with computation.",
       specs: [
         { label: "Count", value: "108" },
         { label: "FP32 / INT32 / FP64", value: "64 / 64 / 32 per SM" },
@@ -145,12 +145,12 @@ export const a100: Gpu = {
         { label: "Max occupancy", value: "64 warps · 2048 threads" },
       ],
       pipeline: "Thread blocks arrive from GPC distribution; warps issue to partition pipelines; LSU traffic flows L1 → L2 partition → HBM2e.",
-      programming: "One thread block per SM; TF32 is the default for cuDNN/cuBLAS matmul on sm_80 unless disabled. cp.async enables the shared-memory pipelining patterns that became standard in attention kernels.",
+      programming: "One thread block per SM; TF32 is the default for cuDNN/cuBLAS matmul on sm_80 unless disabled. cp.async enables the shared-memory pipelining used by attention kernels.",
     },
     l2: {
       name: "L2 cache partition",
       type: "Cache",
-      role: "Two 20 MB partitions joined by a crossbar, 40 MB in all, a 6.7× jump over V100's 6 MB. The jump changed how kernels get written: entire activation tensors could suddenly stay on-die between layers instead of round-tripping to HBM. Each partition fronts the HBM controllers on its half of the die. Software can pin hot address ranges into residency, the hardware compresses compute data on the way through, and MIG slices this cache along with everything else.",
+      role: "Two 20 MB partitions joined by a partitioned crossbar; 6.7× the capacity of V100, sufficient to hold activation tensors of typical layer sizes on-die between kernels. Each partition serves the HBM controllers on its half. Supports residency control and compute-data compression; MIG slices the cache per instance.",
       specs: [
         { label: "Capacity", value: "40 MB (48 MB full die)" },
         { label: "Partitions", value: "2 × 20 MB" },
@@ -162,7 +162,7 @@ export const a100: Gpu = {
     hbm: {
       name: "HBM2e stack + memory controllers",
       type: "Memory interface",
-      role: "Six HBM2e sites surround the die on a CoWoS interposer, each stack driven by two 512-bit controllers. The 80 GB A100 enables five stacks and ten controllers, a 5120-bit bus pushing just over 2 TB/s. One site is dark for yield (hatched; its physical position varies per part). That 2 TB/s was the real headline of the product: scaling compute is the easy half of the problem, and feeding it is what the interposer, the stacks and the bus width are all paying for.",
+      role: "Six HBM2e sites on a CoWoS interposer, each driven by two 512-bit controllers. The 80 GB product enables five stacks and ten controllers: a 5120-bit bus at 2039 GB/s. One site is fused for yield; its position varies per part.",
       specs: [
         { label: "Stacks", value: "5 of 6 enabled" },
         { label: "Controllers", value: "10 × 512-bit" },
@@ -171,12 +171,12 @@ export const a100: Gpu = {
         { label: "ECC", value: "SECDED" },
       ],
       pipeline: "Services L2 partition misses; addresses interleave across stacks.",
-      programming: "cudaMalloc allocations live here; 32-byte sector coalescing governs achievable bandwidth.",
+      programming: "cudaMalloc allocations reside here; 32-byte sector coalescing governs achievable bandwidth.",
     },
     nvlink: {
       name: "NVLink 3",
       type: "Interconnect",
-      role: "Twelve NVLink 3 links at 25 GB/s per direction, 600 GB/s aggregate, double what V100 carried. In DGX and HGX systems all twelve links run into NVSwitch chips, so all eight GPUs converse at full bandwidth simultaneously instead of sharing a ring. That topology change is a large part of why all-reduce stopped being the bottleneck of large-scale training on this generation.",
+      role: "Twelve NVLink 3 links, 25 GB/s per direction, 600 GB/s aggregate, twice the aggregate bandwidth of V100. In DGX/HGX systems all twelve links terminate in NVSwitch, giving simultaneous full-bandwidth all-to-all communication among eight GPUs.",
       specs: [
         { label: "Links", value: "12 × 50 GB/s bidir" },
         { label: "Aggregate", value: "600 GB/s" },
@@ -188,17 +188,17 @@ export const a100: Gpu = {
     pcie: {
       name: "PCIe Gen4 host interface",
       type: "Interconnect",
-      role: "Sixteen lanes of PCIe Gen4 at 32 GB/s per direction, carrying command submission, host copies, and the GPUDirect paths that let NICs and NVMe drives deposit data into HBM without the CPU ever touching it.",
+      role: "x16 Gen4, 32 GB/s per direction: command submission, host copies, and GPUDirect RDMA and Storage paths that write into HBM without CPU involvement.",
       specs: [
         { label: "Link", value: "Gen4 ×16" },
         { label: "Bandwidth", value: "~64 GB/s bidir" },
       ],
-      pipeline: "Entry point for all host-originated work.",
+      pipeline: "Entry point for host-originated work.",
     },
     front: {
       name: "GigaThread Engine + copy engines",
       type: "Front end",
-      role: "The global scheduler. Grid launches become streams of thread blocks dealt out across the seven active GPCs, with context switching and preemption when something has to yield. This block also hosts the MIG hardware that splits GA100 into up to seven isolated instances, each with its own SMs, L2 slices and DRAM bandwidth, an isolation enforced in silicon rather than by the driver. The copy engines alongside run DMA transfers concurrently with kernels.",
+      role: "Distributes thread blocks across the seven active GPCs with context switching and preemption. Hosts the MIG hardware that partitions GA100 into up to seven isolated instances, each with dedicated SM, L2 and DRAM resources; isolation is enforced in hardware. Copy engines execute DMA concurrently with kernels.",
       specs: [
         { label: "Scheduling unit", value: "thread block" },
         { label: "MIG", value: "up to 7 instances" },
@@ -209,13 +209,13 @@ export const a100: Gpu = {
     media: {
       name: "Media engines",
       type: "Fixed function",
-      role: "Five NVDEC decoders and one NVJPG JPEG engine, with no encoder. The silicon follows the traffic: an inference fleet doing video analytics decodes constantly and encodes nearly never. DALI pipelines decode datasets straight into HBM where the SMs consume them.",
+      role: "Five NVDEC decoders and one NVJPG JPEG engine; no encoder. Sized for inference ingest, where decode demand dominates. Output is written to HBM for SM consumption.",
       specs: [
         { label: "NVDEC", value: "5" },
         { label: "NVJPG", value: "1" },
         { label: "NVENC", value: "none" },
       ],
-      pipeline: "Decodes land in HBM for direct SM consumption.",
+      pipeline: "Decode output lands in HBM without a host round trip.",
     },
   },
 }
