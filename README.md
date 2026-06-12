@@ -1,5 +1,5 @@
 # GPU-Visualiser
-A tool to help visualise GPU architectures.
+A tool to visualise GPU architectures.
 
 ## Supported GPUs
 ### Nvidia
