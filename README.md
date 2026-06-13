@@ -13,7 +13,7 @@ The die overview, with the whole floorplan in view and the legend mapping colour
 
 ![Die overview of the NVIDIA H100](docs/h100-overview-readme.png)
 
-Click a block to pin it and read its documentation. Here an XCD compute chiplet on the AMD MI300X is selected:
+Click a block to pin it and read its documentation. Here the GigaThread Engine on the NVIDIA GeForce RTX 4090 is selected:
 
 ![A selected component on the AMD MI300X](docs/rtx4090-component-readme.png)
 
