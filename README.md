@@ -11,11 +11,11 @@ Every floorplan is built from the vendor's own published architecture. Units sho
 
 The die overview, with the whole floorplan in view and the legend mapping colours to block types:
 
-![Die overview of the NVIDIA H100](docs/screenshot-overview.svg)
+![Die overview of the NVIDIA H100](docs/h100-overview.svg)
 
 Click a block to pin it and read its documentation. Here an XCD compute chiplet on the AMD MI300X is selected:
 
-![A selected component on the AMD MI300X](docs/screenshot-component.svg)
+![A selected component on the AMD MI300X](docs/instinct-component.svg)
 
 ## Supported GPUs
 
