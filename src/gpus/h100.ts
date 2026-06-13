@@ -288,7 +288,7 @@ export const h100: Gpu = {
         media: {
             name: "Media engines",
             type: "Fixed function",
-            role: "Seven NVDEC video decoders and seven NVJPG JPEG decoders. These are fixed-function circuits that decompress video and images far more efficiently than the same work running on SMs, leaving the SMs free for inference. The count reflects the inference ingest pipeline, where encoded frames arrive continuously and must be decoded before a model can consume them. Decoded output is written directly to HBM.",
+            role: "Seven NVDEC video decoders and seven NVJPG JPEG decoders. These are fixed-function circuits that decompress video and images far more efficiently than the same work running on SMs, leaving the SMs free for other tasks.",
             specs: [
                 { label: "NVDEC", value: "7" },
                 { label: "NVJPG", value: "7" },

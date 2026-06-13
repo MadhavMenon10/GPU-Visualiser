@@ -15,7 +15,7 @@ The die overview, with the whole floorplan in view and the legend mapping colour
 
 Click a block to pin it and read its documentation. Here an XCD compute chiplet on the AMD MI300X is selected:
 
-![A selected component on the AMD MI300X](docs/instinct-component.png)
+![A selected component on the AMD MI300X](docs/rtx4090-component.png)
 
 ## Supported GPUs
 
