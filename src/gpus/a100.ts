@@ -111,7 +111,7 @@ export const a100: Gpu = {
     gpc: {
       name: "GPC (GPU Processing Cluster)",
       type: "Compute cluster",
-      role: "The top-level compute partition contains up to 8 TPCs, which amounts to 16 SMs since each TPC holds two. GA100 has no graphics pipeline, so each GPC contains only compute resources and a local distributor that assigns incoming thread blocks to SMs with free capacity. One full GPC is disabled on A100, shown as the hatched block in the floorplan. MIG, Multi-Instance GPU, divides the device along GPC boundaries and gives each tenant dedicated compute, L2 and DRAM slices with hardware-enforced isolation, so one tenant's workload cannot slow or observe another.",
+      role: "The top-level compute partition contains up to 8 TPCs, which amounts to 16 SMs since each TPC holds two. GA100 has no graphics pipeline, so each GPC contains only compute resources and a local distributor that assigns incoming thread blocks to SMs with free capacity. One full GPC is fused off on A100, shown as the hatched block in the floorplan. Fusing off means the unit is permanently disabled at the factory by blowing tiny on-chip fuses, a step that cannot be undone. NVIDIA does this to sell dies with a manufacturing defect in that region rather than discarding them, and the position of the fused GPC varies from die to die. MIG, Multi-Instance GPU, divides the device along GPC boundaries and gives each tenant dedicated compute, L2 and DRAM slices with hardware-enforced isolation, so one tenant's workload cannot slow or observe another.",
       specs: [
         { label: "Count", value: "7 enabled (8 physical)" },
         { label: "TPCs per GPC", value: "7-8 enabled (8 physical)" },
