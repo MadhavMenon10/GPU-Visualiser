@@ -12,7 +12,6 @@ export function Sidebar({ gpus, currentId, onPick }: Props) {
     <nav className="sidebar">
       <div className="sidebar-head">
         <h1 className="app-title">GPU VISUALISER</h1>
-        <p className="app-sub">architecture floorplans</p>
       </div>
       {vendors.map((v) => (
         <div key={v} className="vendor-group">
@@ -33,11 +32,6 @@ export function Sidebar({ gpus, currentId, onPick }: Props) {
             ))}
         </div>
       ))}
-      <div className="sidebar-foot">
-        data: vendor architecture
-        <br />
-        whitepapers · layouts schematic
-      </div>
     </nav>
   )
 }
