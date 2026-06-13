@@ -112,7 +112,7 @@ export const rtx4090: Gpu = {
     gpc: {
       name: "GPC (GPU Processing Cluster)",
       type: "Compute cluster",
-      role: "The top-level compute partition contains up to 6 TPCs, which amounts to 12 SMs since each TPC holds two. Each GPC also includes a raster engine, which converts 3D triangles into 2D pixel fragments that shaders can process, and 16 ROPs for depth testing and pixel blending. Eleven of the twelve physical GPCs are active on the 4090, with the twelfth disabled for yield.",
+      role: "The top-level compute partition contains up to 6 TPCs, which amounts to 12 SMs since each TPC holds two. Each GPC also includes a raster engine, which converts 3D triangles into 2D pixel fragments that shaders can process, and 16 ROPs for depth testing and pixel blending. Eleven of the twelve physical GPCs are active on the 4090, with the twelfth fused off. Fusing off means the unit is permanently disabled at the factory by blowing tiny on-chip fuses, a step that cannot be undone. NVIDIA does this to sell dies with a manufacturing defect in that region rather than discarding them, and the position of the fused GPC varies from die to die.",
       specs: [
         { label: "Count", value: "11 enabled (12 physical)" },
         { label: "TPCs per GPC", value: "6 (5 in two harvested GPCs)" },
