@@ -107,7 +107,7 @@ Blocks are coloured by `kind`, and the legend in the app reflects this:
 
 Architecture descriptions come primarily from each vendor's own whitepaper or instruction-set documentation. Die area, transistor counts and clock speeds, where the whitepaper does not state them, are taken from the TechPowerUp GPU Database.
 
-1. NVIDIA — [NVIDIA H100 Tensor Core GPU Architecture (Hopper whitepaper)](https://resources.nvidia.com/en-us-tensor-core/gtc22-whitepaper-hopper). See also the [Hopper Architecture In-Depth](https://developer.nvidia.com/blog/nvidia-hopper-architecture-in-depth/) technical blog.
+1. NVIDIA — [NVIDIA H100 Tensor Core GPU Architecture (Hopper whitepaper)]([https://resources.nvidia.com/en-us-tensor-core/gtc22-whitepaper-hopper](https://resources.nvidia.com/en-us-hopper-architecture/nvidia-h100-tensor-c). See also the [Hopper Architecture In-Depth](https://developer.nvidia.com/blog/nvidia-hopper-architecture-in-depth/) technical blog.
 2. NVIDIA — [NVIDIA A100 Tensor Core GPU Architecture (Ampere whitepaper)](https://images.nvidia.com/aem-dam/en-zz/Solutions/data-center/nvidia-ampere-architecture-whitepaper.pdf).
 3. NVIDIA — [NVIDIA Ada GPU Architecture whitepaper](https://images.nvidia.com/aem-dam/Solutions/geforce/ada/nvidia-ada-gpu-architecture.pdf).
 4. NVIDIA — [NVIDIA Ampere GA102 GPU Architecture whitepaper](https://www.nvidia.com/content/PDF/nvidia-ampere-ga-102-gpu-architecture-whitepaper-v2.1.pdf).
