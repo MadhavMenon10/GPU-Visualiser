@@ -1,8 +1,9 @@
+[This README was written by a human]
 # GPU-Visualiser
 
-A tool to visualise GPU architectures. Pan and zoom around a die floorplan, click on any block — a streaming multiprocessor, a cache slice, a memory controller, an interconnect link — and read a plain-English explanation of what it does, where it sits in the pipeline, and how you program it. The goal is for people to come away understanding the parts of a GPU, not just seeing how they are laid out.
+A tool to visualise GPU architectures.
 
-Every floorplan is built from the vendor's own published architecture. Units shown as hatched blocks are *fused off*: permanently disabled at the factory by blowing tiny on-chip fuses, so a die with a manufacturing defect in that region can still be sold rather than scrapped. This is why a shipping part often has fewer active cores than the full die.
+Every floorplan is built from the vendor's own published architecture. Units shown as hatched blocks are *fused off*: permanently disabled at the factory by blowing tiny on-chip fuses, so a die with a manufacturing defect in that region can still be sold rather than scrapped. This is why a shipping part often has fewer active cores than the full die. This is also covered within the tool.
 
 ## Screenshots
 
@@ -16,7 +17,7 @@ Click a block to pin it and read its documentation. Here an XCD compute chiplet 
 
 ## Supported GPUs
 
-Each entry cites the sources its data is drawn from; the numbers map to the [References](#references) section.
+Each entry cites the sources its data is drawn from. The numbers map to the [References](#references) section.
 
 ### NVIDIA
 
@@ -59,8 +60,6 @@ npm run build
 npm run preview
 ```
 
-If you are running in a remote or cloud environment and the dev server feels slow to load, that is the module-by-module nature of Vite's dev mode over a forwarded port rather than the app itself. Run `npm run build` followed by `npm run preview` to serve a single bundled file, which loads far faster across a tunnel.
-
 ## Contributing
 
 Contributions are welcome, especially new GPUs and corrections to the existing data.
@@ -101,9 +100,6 @@ Blocks are coloured by `kind`, and the legend in the app reflects this:
 | `group` | invisible containers used only for layout |
 | `die` | the outermost block |
 
-### Writing the component docs
-
-The explanations aim to teach, so keep them readable. Use complete sentences, explain any jargon inline the first time it appears, and keep the same explanation for a concept consistent across GPUs, changing only the numbers and vendor-specific names. You do not need to explain the very basics such as what a thread or a block is, but everything above that should be made clear to a reader who is new to the part. Cite the vendor whitepaper or specification you take figures from, adding it to the references below.
 
 ## References
 
