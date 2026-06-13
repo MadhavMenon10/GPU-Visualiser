@@ -73,12 +73,6 @@ body {
   letter-spacing: 0.08em;
 }
 
-.app-sub {
-  margin-top: 2px;
-  color: var(--text-dim);
-  font-size: 11px;
-}
-
 .vendor-group {
   border-bottom: 1px solid var(--border);
   padding-bottom: 6px;
@@ -123,15 +117,6 @@ body {
   font-size: 10.5px;
   color: var(--text-dim);
   margin-top: 1px;
-}
-
-.sidebar-foot {
-  margin-top: auto;
-  padding: 10px 14px;
-  font-size: 10px;
-  line-height: 1.5;
-  color: var(--text-dim);
-  border-top: 1px solid var(--border);
 }
 
 /* ---------- die view ---------- */
@@ -254,6 +239,36 @@ rect.hatch {
   font-size: 10px;
   letter-spacing: 0.05em;
   color: var(--text-dim);
+}
+
+.legend-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  cursor: pointer;
+  text-align: left;
+}
+
+.legend-toggle:hover {
+  color: var(--text);
+}
+
+.legend-caret {
+  display: inline-block;
+  width: 8px;
+}
+
+.legend-body {
+  margin-top: 6px;
 }
 
 .legend-row {
