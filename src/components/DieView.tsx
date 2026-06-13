@@ -207,7 +207,7 @@ export function DieView({ gpu, root, selectedId, onSelect, onHover }: Props) {
       <div className="statusbar">
         <span className="status-path">{statusPath}</span>
         <span className="status-right">
-          zoom {transform.k.toFixed(1)}× · drag pan · wheel zoom · hover read · click pin · F fit · ESC clear
+          zoom {transform.k.toFixed(1)}× · Drag to pan · Wheel to zoom · Hover to read · Click to pin · F fit · ESC clear
         </span>
       </div>
     </div>
