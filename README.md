@@ -4,6 +4,8 @@
 
 A tool to visualise GPU architectures.
 
+Access here: [https://madhavmenon10.github.io/GPU-Visualiser/](https://madhavmenon10.github.io/GPU-Visualiser/)
+
 ## Note
 
 Every floorplan is built from the vendor's own published architecture. Units shown as hatched blocks are *fused off* i.e. permanently disabled at the factory by blowing tiny on-chip fuses, so a die with a manufacturing defect in that region can still be sold rather than scrapped. This is why a shipping part often has fewer active cores than the full die. This is also covered within the tool.
