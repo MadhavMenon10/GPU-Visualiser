@@ -37,3 +37,7 @@ Blocks are coloured by `kind`, and the legend in the app reflects this:
 | `media` | video codecs, display engines |
 | `group` | invisible containers used only for layout |
 | `die` | the outermost block |
+
+### Citations
+
+For each GPU that you add, please cite your sources to maintain transparency and accuracy. 
