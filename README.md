@@ -4,7 +4,7 @@
 
 A tool to visualise GPU architectures.
 
-Access here: [https://madhavmenon10.github.io/GPU-Visualiser/](https://madhavmenon10.github.io/GPU-Visualiser/)
+Access here: [https://madhavmenon10.github.io/gpu-visualiser/](https://madhavmenon10.github.io/gpu-visualiser/)
 
 ## Note
 
