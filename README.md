@@ -67,7 +67,7 @@ npm run preview
 
 ## Contributing
 
-See [CONTRIBUTING.md](https://github.com/MadhavMenon10/GPU-Visualiser?tab=contributing-ov-file)
+See [CONTRIBUTING.md](https://github.com/MadhavMenon10/gpu-visualiser?tab=contributing-ov-file)
 
 ## References
 
