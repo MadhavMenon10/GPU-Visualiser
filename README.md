@@ -65,6 +65,8 @@ npm run build
 npm run preview
 ```
 
+You can view the current state of the project through the published GitHub pages link: [https://madhavmenon10.github.io/gpu-visualiser/](https://madhavmenon10.github.io/gpu-visualiser/)
+
 ## Contributing
 
 See [CONTRIBUTING.md](https://github.com/MadhavMenon10/gpu-visualiser?tab=contributing-ov-file)
