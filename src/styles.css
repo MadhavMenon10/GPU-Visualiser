@@ -427,3 +427,86 @@ rect.hatch {
 .spec-value {
   text-align: right;
 }
+
+/* ---------- crash fallback ---------- */
+
+.crash {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 64px 24px;
+  font-family: var(--sans);
+}
+
+.crash-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.crash-hint {
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.crash-detail {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--accent);
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.crash-reload {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text);
+  background: var(--bg-panel);
+  border: 1px solid var(--border-strong);
+  padding: 7px 14px;
+  cursor: pointer;
+}
+
+.crash-reload:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ---------- responsive ---------- */
+
+/* The three fixed columns need 580px. Below that the die view collapses to
+   zero width and the visualisation disappears, so narrow the rails first and
+   then stack them above/below the die. */
+@media (max-width: 900px) {
+  .app {
+    grid-template-columns: 196px 1fr 288px;
+  }
+}
+
+@media (max-width: 760px) {
+  body {
+    overflow: auto;
+  }
+
+  .app {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(320px, 60vh) auto;
+    height: auto;
+    min-height: 100%;
+  }
+
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .panel {
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
+}

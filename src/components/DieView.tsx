@@ -12,6 +12,10 @@ interface Props {
   onHover: (b: Block | null) => void
 }
 
+const MIN_SCALE = 0.4
+const MAX_SCALE = 120
+const FIT_MARGIN = 28
+
 function labelPos(b: Block): "center" | "tl" {
   return b.labelPos ?? (b.kind === "die" ? "tl" : "center")
 }
@@ -113,6 +117,7 @@ function BlockEl({
 export function DieView({ gpu, root, selectedId, onSelect, onHover }: Props) {
   const svgRef = useRef<SVGSVGElement>(null)
   const zoomRef = useRef<ZoomBehavior<SVGSVGElement, unknown>>()
+  const fittedRef = useRef(false)
   const [transform, setTransform] = useState<ZoomTransform>(zoomIdentity)
   const [hoverId, setHoverId] = useState<string | null>(null)
 
@@ -136,16 +141,23 @@ export function DieView({ gpu, root, selectedId, onSelect, onHover }: Props) {
     const zb = zoomRef.current
     if (!svg || !zb) return
     const { width, height } = svg.getBoundingClientRect()
-    const m = 28
-    const k = Math.min((width - 2 * m) / root.w, (height - 2 * m) / root.h)
+    // The svg can measure 0 before layout settles, and on a narrow viewport the
+    // middle grid column collapses entirely. Fitting to that gives a negative
+    // scale, which mirrors the die off-screen and leaves a blank canvas.
+    const availW = width - 2 * FIT_MARGIN
+    const availH = height - 2 * FIT_MARGIN
+    if (availW <= 0 || availH <= 0) return
+    const raw = Math.min(availW / root.w, availH / root.h)
+    const k = Math.min(Math.max(raw, MIN_SCALE), MAX_SCALE)
     const t = zoomIdentity.translate((width - root.w * k) / 2, (height - root.h * k) / 2).scale(k)
     select(svg).call(zb.transform, t)
+    fittedRef.current = true
   }
 
   useEffect(() => {
     const svg = svgRef.current!
     const zb = d3zoom<SVGSVGElement, unknown>()
-      .scaleExtent([0.4, 120])
+      .scaleExtent([MIN_SCALE, MAX_SCALE])
       .clickDistance(5)
       .on("zoom", (e) => setTransform(e.transform))
     zoomRef.current = zb
@@ -161,7 +173,20 @@ export function DieView({ gpu, root, selectedId, onSelect, onHover }: Props) {
         [-root.w * 0.6, -root.h * 0.6],
         [root.w * 1.6, root.h * 1.6],
       ])
+    fittedRef.current = false
     fit()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [root])
+
+  // If the svg had no measurable size at mount, fit as soon as it gets one.
+  useEffect(() => {
+    const svg = svgRef.current
+    if (!svg || typeof ResizeObserver === "undefined") return
+    const ro = new ResizeObserver(() => {
+      if (!fittedRef.current) fit()
+    })
+    ro.observe(svg)
+    return () => ro.disconnect()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [root])
 
